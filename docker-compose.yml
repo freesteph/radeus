@@ -1,0 +1,21 @@
+version: "3.3"
+services:
+  radius:
+    depends_on:
+      - endpoints
+    build:
+      context: './radius'
+    ports:
+      - "1812:1812"
+  client:
+    build:
+      context: './client'
+    volumes:
+      - ./client/examples:/examples
+  endpoints:
+    build:
+      context: './endpoints'
+    ports:
+      - "4567:4567"
+volumes:
+  examples: {}

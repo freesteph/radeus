@@ -1,0 +1,34 @@
+* Radix
+
+** Overview
+
+Radix is an attempt at containing a RADIUS server configured with REST
+endpoints to perform authentication.
+
+** Components
+
+
+The project uses docker-compose to orchestrate the different
+
+components:
+
+*** ~./radius~
+
+The folder containing all of the RADIUS server configuration.
+
+*** ~./client~
+
+The folder containing a plain simple distribution used to interact
+with the server.
+
+*** ~./endpoints~
+
+The folder contaning the HTTP endpoints used by the server to
+authenticate.
+
+
+** Running
+
+1. Run ~make~ in the root folder;
+2. Navigate to ~./client/examples~;
+3. Pick any example directory and run ~make~ from within it.

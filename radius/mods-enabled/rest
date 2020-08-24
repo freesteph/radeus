@@ -1,0 +1,171 @@
+rest {
+	#
+	#  This subsection configures the tls related items
+	#  that control how FreeRADIUS connects to a HTTPS
+	#  server.
+	#
+	tls {
+		#  Certificate Authorities:
+		#  "ca_file" (libcurl option CURLOPT_ISSUERCERT).
+		#    File containing a single CA, which is the issuer of the server
+		#    certificate.
+		#  "ca_info_file" (libcurl option CURLOPT_CAINFO).
+		#    File containing a bundle of certificates, which allow to handle
+		#    certificate chain validation.
+		#  "ca_path" (libcurl option CURLOPT_CAPATH).
+		#    Directory holding CA certificates to verify the peer with.
+#		ca_file = ${certdir}/cacert.pem
+#		ca_info_file = ${certdir}/cacert_bundle.pem
+#		ca_path = ${certdir}
+
+#		certificate_file        = /path/to/radius.crt
+#		private_key_file	= /path/to/radius.key
+#		private_key_password	= "supersecret"
+#		random_file		= /dev/urandom
+
+		#  Server certificate verification requirements.  Can be:
+		#    "no"  (don't even bother trying)
+		#    "yes" (verify the cert was issued by one of the
+		#	   trusted CAs)
+		#
+		#  The default is "yes"
+#		check_cert = yes
+
+		#  Server certificate CN verification requirements.  Can be:
+		#    "no"  (don't even bother trying)
+		#    "yes" (verify the CN in the certificate matches the host
+		#	   in the URI)
+		#
+		#  The default is "yes"
+#		check_cert_cn = yes
+	}
+
+	# rlm_rest will open a connection to the server specified in connect_uri
+	# to populate the connection cache, ready for the first request.
+	# The server will not start if the server specified is unreachable.
+	#
+	# If you wish to disable this pre-caching and reachability check,
+	# comment out the configuration item below.
+        connect_uri = "http://endpoints:4567/"
+
+	#
+	#  how long before new connection attempts timeout, defaults to 4.0 seconds.
+	#
+#	connect_timeout = 4.0
+
+	#
+	#  The following config items can be used in each of the sections.
+	#  The sections themselves reflect the sections in the server.
+	#  For example if you list rest in the authorize section of a virtual server,
+	#  the settings from the authorize section here will be used.
+	#
+	#  The following config items may be listed in any of the sections:
+	#    uri          - to send the request to.
+	#    method       - HTTP method to use, one of 'get', 'post', 'put', 'patch',
+	#                   'delete' or any custom HTTP method.
+	#    body         - The format of the HTTP body sent to the remote server.
+	#                   May be 'none', 'post' or 'json', defaults to 'none'.
+	#    data         - Send custom freeform data in the HTTP body. Content-type
+	#                   may be specified with 'body'. Will be expanded.
+	#                   Values from expansion will not be escaped, this should be
+	#                   done using the appropriate xlat method e.g. %{urlencode:<attr>}.
+	#    force_to     - Force the response to be decoded with this decoder.
+	#                   May be 'plain' (creates reply:REST-HTTP-Body), 'post'
+	#                   or 'json'.
+	#    tls          - TLS settings for HTTPS.
+	#    auth         - HTTP auth method to use, one of 'none', 'srp', 'basic',
+	#                   'digest', 'digest-ie', 'gss-negotiate', 'ntlm',
+	#                   'ntlm-winbind', 'any', 'safe'. defaults to 'none'.
+	#    username     - User to authenticate as, will be expanded.
+	#    password     - Password to use for authentication, will be expanded.
+	#    require_auth - Require HTTP authentication.
+	#    timeout      - HTTP request timeout in seconds, defaults to 4.0.
+	#
+	#  Additional HTTP headers may be specified with control:REST-HTTP-Header.
+	#  The values of those attributes should be in the format:
+	#
+	#    control:REST-HTTP-Header := "<HTTP attribute>: <value>"
+	#
+	#  The control:REST-HTTP-Header attributes will be consumed
+	#  (i.e. deleted) after each call to the rest module, and each
+	#  %{rest:} expansion.  This is so that headers from one REST
+	#  call do not affect headers from a different REST call.
+
+	#
+	#  Body encodings are the same for requests and responses
+	#
+	#  POST - All attributes and values are urlencoded
+	#  [outer.][<list>:]<attribute0>=<value0>&[outer.][<list>:]<attributeN>=<valueN>
+	#
+	#  JSON - All attributes and values are escaped according to the JSON specification
+	#  {
+	#      "<attribute0>":{
+	#          "type":"<type0>",
+	#          "value":[<value0>,<value1>,<valueN>]
+	#      },
+	#      "<attribute1>":{
+	#          "type":"<type1>",
+	#          "value":[...]
+	#      },
+	#      "<attributeN>":{
+	#          "type":"<typeN>",
+	#          "value":[...]
+	#      },
+	#  }
+	#
+	#  The response format adds three optional fields:
+	#  - do_xlat	If true, any values will be xlat expanded. Defaults to true.
+	#  - is_json	If true, any nested JSON data will be copied to the attribute
+	#               in string form. Defaults to true.
+	#  - op	        Controls how the attribute is inserted into the target list.
+	#               Defaults to ':='. To create multiple attributes from multiple
+	#               values, this should be set to '+=', otherwise only the last
+	#               value will be used, and it will be assigned to a single
+	#               attribute.
+	#  {
+	#      "<attribute0>":{
+	#          "is_json":<bool>,
+	#          "do_xlat":<bool>,
+	#          "op":"<operator>",
+	#          "value":[<value0>,<value1>,<valueN>]
+	#      },
+	#      "<attribute1>":"value",
+	#      "<attributeN>":{
+	#          "value":[<value0>,<value1>,<valueN>],
+	#          "op":"+="
+	#      }
+	#  }
+
+	#
+	#  Module return codes are determined by HTTP response codes. These vary depending on the
+	#  section.
+	#
+	#  If the body is processed and found to be malformed or unsupported fail will be returned.
+	#  If the body is processed and found to contain attribute updated will be returned,
+	#  except in the case of a 401 code.
+	#
+
+	#  Authorize/Authenticate
+	#
+	#  Code   Meaning       Process body  Module code
+	#  404    not found     no            notfound
+	#  410    gone          no            notfound
+	#  403    forbidden     no            userlock
+	#  401    unauthorized  yes           reject
+	#  204    no content    no            ok
+	#  2xx    successful    yes           ok/updated
+	#  5xx    server error  no            fail
+	#  xxx    -             no            invalid
+	authorize {
+		uri = "${..connect_uri}whoisit/%{User-Name}"
+		method = 'get'
+                body = 'json'
+		tls = ${..tls}
+	}
+
+	authenticate {
+		uri = "${..connect_uri}wherearewe/%{User-Name}"
+		method = 'get'
+		tls = ${..tls}
+	}
+}

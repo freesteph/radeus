@@ -1,0 +1,3 @@
+bob Auth-Type := "pap", Cleartext-Password := "bar"
+
+DEFAULT Auth-Type := rest
